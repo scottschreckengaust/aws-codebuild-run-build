@@ -8,8 +8,8 @@
     "lint": "prettier -c *.js *.json *.md test/*.js; eslint **.js test/**.js",
     "format": "prettier --write -c *.js *.json *.md test/*.js; eslint --fix **.js test/**.js",
     "format:check": "prettier --check -c *.js *.json *.md test/*.js; eslint --fix **.js test/**.js",
-    "package": "ncc build index.js -o dist",
-    "build": "ncc build index.js -o dist",
+    "package": "esbuild index.js --bundle --platform=node --format=esm --outfile=dist/index.js --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
+    "build": "esbuild index.js --bundle --platform=node --format=esm --outfile=dist/index.js --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
     "test": "mocha"
   },
   "author": "aws-crypto-tools-team@amazon.com",
@@ -28,8 +28,8 @@
     "*.js"
   ],
   "devDependencies": {
-    "@vercel/ncc": "^0.38.4",
     "chai": "^6.2.2",
+    "esbuild": "^0.28.0",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^6.10.1",
     "husky": "^8.0.3",
