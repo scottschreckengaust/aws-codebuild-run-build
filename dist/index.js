@@ -57664,11 +57664,11 @@ async function waitForBuildEndTime(sdk, { id, logs }, { updateInterval, updateBa
     nextForwardToken
   );
 }
-function githubInputs() {
+function githubInputs(ctx = context2) {
   const projectName = getInput("project-name", { required: true });
   const disableSourceOverride = getInput("disable-source-override", { required: false }) === "true";
-  const { owner, repo } = context2.repo;
-  const { payload: payload2 } = context2;
+  const { owner, repo } = ctx.repo;
+  const { payload: payload2 } = ctx;
   const sourceVersion = getInput("source-version-override", { required: false }) || (process.env[`GITHUB_EVENT_NAME`] === "pull_request" ? (((payload2 || {}).pull_request || {}).head || {}).sha : process.env[`GITHUB_SHA`]);
   assert(sourceVersion, "No source version could be evaluated.");
   const sourceTypeOverride = getInput("source-type-override", { required: false }) || void 0;

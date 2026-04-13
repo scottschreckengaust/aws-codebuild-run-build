@@ -186,12 +186,12 @@ async function waitForBuildEndTime(
   );
 }
 
-function githubInputs() {
+function githubInputs(ctx = github.context) {
   const projectName = core.getInput("project-name", { required: true });
   const disableSourceOverride =
     core.getInput("disable-source-override", { required: false }) === "true";
-  const { owner, repo } = github.context.repo;
-  const { payload } = github.context;
+  const { owner, repo } = ctx.repo;
+  const { payload } = ctx;
   // The github.context.sha is evaluated on import.
   // This makes it hard to test.
   // So I use the raw ENV.

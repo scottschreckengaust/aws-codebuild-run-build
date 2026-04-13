@@ -10,7 +10,6 @@ import {
 } from "../code-build.js";
 import { expect } from "chai";
 import forEach from "mocha-each";
-import * as github from "@actions/github";
 
 describe("logName", () => {
   it("return the logGroupName and logStreamName from an ARN", () => {
@@ -43,13 +42,9 @@ describe("logName", () => {
 
 describe("githubInputs", () => {
   const OLD_ENV = { ...process.env };
-  const OLD_PAYLOAD = github.context.payload;
-  const OLD_EVENT_NAME = github.context.eventName;
 
   afterEach(() => {
     process.env = { ...OLD_ENV };
-    github.context.eventName = OLD_EVENT_NAME;
-    github.context.payload = OLD_PAYLOAD;
   });
 
   const projectName = "project_name";
@@ -60,16 +55,17 @@ describe("githubInputs", () => {
   const updateInterval = 5;
   const updateBackOff = 10;
 
+  const defaultCtx = {
+    repo: { owner: "owner", repo: "repo" },
+    payload: {},
+  };
+
   it("build basic parameters for codeBuild.startBuild", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
-    // These tests run in pull requests
-    // so to tests things that are NOT pull request...
     process.env[`GITHUB_EVENT_NAME`] = "not_pull_request";
-    const test = githubInputs();
+    const test = githubInputs(defaultCtx);
     expect(test).to.haveOwnProperty("projectName").and.to.equal(projectName);
     expect(test).to.haveOwnProperty("sourceVersion").and.to.equal(sha);
     expect(test).to.haveOwnProperty("owner").and.to.equal(`owner`);
@@ -93,12 +89,10 @@ describe("githubInputs", () => {
   });
 
   it("a project name is required.", () => {
-    expect(() => githubInputs()).to.throw();
+    expect(() => githubInputs(defaultCtx)).to.throw();
   });
 
   it("can process env-vars-for-codebuild", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
@@ -112,7 +106,7 @@ describe("githubInputs", () => {
     process.env.three = "_three_";
     process.env.four = "_four_";
 
-    const test = githubInputs();
+    const test = githubInputs(defaultCtx);
 
     expect(test)
       .to.haveOwnProperty("envPassthrough")
@@ -120,14 +114,12 @@ describe("githubInputs", () => {
   });
 
   it("skips override when parameter is set to true", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`INPUT_DISABLE-SOURCE-OVERRIDE`] = "true";
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
 
-    const test = githubInputs();
+    const test = githubInputs(defaultCtx);
 
     expect(test)
       .to.haveOwnProperty("disableSourceOverride")
@@ -135,16 +127,15 @@ describe("githubInputs", () => {
   });
 
   it("can handle pull requests", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
     process.env[`GITHUB_EVENT_NAME`] = "pull_request";
-    github.context.payload = {
-      pull_request: { head: { sha: pullRequestSha } },
+    const ctx = {
+      repo: { owner: "owner", repo: "repo" },
+      payload: { pull_request: { head: { sha: pullRequestSha } } },
     };
-    const test = githubInputs();
+    const test = githubInputs(ctx);
     expect(test).to.haveOwnProperty("projectName").and.to.equal(projectName);
     expect(test)
       .to.haveOwnProperty("sourceVersion")
@@ -168,17 +159,16 @@ describe("githubInputs", () => {
   });
 
   it("will not continue if there is no payload", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
     process.env[`GITHUB_EVENT_NAME`] = "pull_request";
-    // These tests run in pull requests
-    // so to tests things that are NOT pull request...
-    github.context.payload = {};
+    const ctx = {
+      repo: { owner: "owner", repo: "repo" },
+      payload: {},
+    };
 
-    expect(() => githubInputs()).to.throw(
+    expect(() => githubInputs(ctx)).to.throw(
       "No source version could be evaluated."
     );
   });
@@ -189,11 +179,12 @@ describe("githubInputs", () => {
     process.env[`INPUT_UPDATE-BACK-OFF`] = `${updateBackOff}`;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
-    github.context.payload = {
-      pull_request: { head: { sha: pullRequestSha } },
+    const ctx = {
+      repo: { owner: "owner", repo: "repo" },
+      payload: { pull_request: { head: { sha: pullRequestSha } } },
     };
 
-    const test = githubInputs();
+    const test = githubInputs(ctx);
 
     expect(test)
       .to.haveOwnProperty("updateInterval")
@@ -204,14 +195,12 @@ describe("githubInputs", () => {
   });
 
   it("can hide cloudwatch logs when the parameter is set to true", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`INPUT_HIDE-CLOUDWATCH-LOGS`] = "true";
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
 
-    const test = githubInputs();
+    const test = githubInputs(defaultCtx);
 
     expect(test).to.haveOwnProperty("hideCloudWatchLogs").and.to.equal(true);
   });
@@ -228,8 +217,6 @@ describe("inputs2Parameters", () => {
   const sha = "1234abcd-12ab-34cd-56ef-1234567890ab";
 
   it("build basic parameters for codeBuild.startBuild", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
@@ -284,8 +271,6 @@ describe("inputs2Parameters", () => {
   });
 
   it("build override parameters for codeBuild.startBuild", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
@@ -354,8 +339,6 @@ describe("inputs2Parameters", () => {
   });
 
   it("can process env-vars-for-codebuild", () => {
-    // This is how GITHUB injects its input values.
-    // It would be nice if there was an easy way to test this...
     process.env[`INPUT_PROJECT-NAME`] = projectName;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
