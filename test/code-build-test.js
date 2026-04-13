@@ -1,15 +1,16 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-const {
+import {
   logName,
   githubInputs,
   inputs2Parameters,
   waitForBuildEndTime,
   buildSdk,
-} = require("../code-build");
-const { expect } = require("chai");
-const forEach = require("mocha-each");
+} from "../code-build.js";
+import { expect } from "chai";
+import forEach from "mocha-each";
+import * as github from "@actions/github";
 
 describe("logName", () => {
   it("return the logGroupName and logStreamName from an ARN", () => {
@@ -42,13 +43,13 @@ describe("logName", () => {
 
 describe("githubInputs", () => {
   const OLD_ENV = { ...process.env };
-  const { context: OLD_CONTEXT } = require("@actions/github");
-  const { payload: OLD_PAYLOAD, eventName: OLD_EVENT_NAME } = OLD_CONTEXT;
+  const OLD_PAYLOAD = github.context.payload;
+  const OLD_EVENT_NAME = github.context.eventName;
+
   afterEach(() => {
     process.env = { ...OLD_ENV };
-    const { context } = require("@actions/github");
-    context.eventName = OLD_EVENT_NAME;
-    context.payload = OLD_PAYLOAD;
+    github.context.eventName = OLD_EVENT_NAME;
+    github.context.payload = OLD_PAYLOAD;
   });
 
   const projectName = "project_name";
@@ -140,8 +141,9 @@ describe("githubInputs", () => {
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
     process.env[`GITHUB_EVENT_NAME`] = "pull_request";
-    const { context } = require("@actions/github");
-    context.payload = { pull_request: { head: { sha: pullRequestSha } } };
+    github.context.payload = {
+      pull_request: { head: { sha: pullRequestSha } },
+    };
     const test = githubInputs();
     expect(test).to.haveOwnProperty("projectName").and.to.equal(projectName);
     expect(test)
@@ -174,7 +176,7 @@ describe("githubInputs", () => {
     process.env[`GITHUB_EVENT_NAME`] = "pull_request";
     // These tests run in pull requests
     // so to tests things that are NOT pull request...
-    require("@actions/github").context.payload = {};
+    github.context.payload = {};
 
     expect(() => githubInputs()).to.throw(
       "No source version could be evaluated."
@@ -187,8 +189,9 @@ describe("githubInputs", () => {
     process.env[`INPUT_UPDATE-BACK-OFF`] = `${updateBackOff}`;
     process.env[`GITHUB_REPOSITORY`] = repoInfo;
     process.env[`GITHUB_SHA`] = sha;
-    const { context } = require("@actions/github");
-    context.payload = { pull_request: { head: { sha: pullRequestSha } } };
+    github.context.payload = {
+      pull_request: { head: { sha: pullRequestSha } },
+    };
 
     const test = githubInputs();
 

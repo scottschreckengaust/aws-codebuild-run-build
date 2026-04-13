@@ -7,12 +7,12 @@ Convert the project from CommonJS (CJS) to ECMAScript Modules (ESM).
 - The project currently uses `require()` / `module.exports` throughout
 - `@actions/github` v9+ is ESM-only; we're pinned to v8.x as a workaround
 - The action runs on `node24` which supports `require(esm)` natively, but the source should be idiomatic ESM
-- `@vercel/ncc` bundles everything into `dist/index.js` — ncc has known issues with ESM output (it emits CJS-style `__nccwpck_require__` internally), but can *consume* ESM input since it uses webpack under the hood
+- `@vercel/ncc` bundles everything into `dist/index.js` — ncc has known issues with ESM output (it emits CJS-style `__nccwpck_require__` internally), but can _consume_ ESM input since it uses webpack under the hood
 - The bundled `dist/index.js` is what actually runs in GitHub Actions (via `action.yml` → `runs.main`)
 
 ## Key Risks
 
-1. **ncc bundling**: ncc can bundle ESM *input* but its output is still CJS-flavored. Since `action.yml` uses `runs.using: node24` and points to `dist/index.js`, and ncc's output is self-contained, this works fine — the output doesn't depend on `package.json` `"type"`.
+1. **ncc bundling**: ncc can bundle ESM _input_ but its output is still CJS-flavored. Since `action.yml` uses `runs.using: node24` and points to `dist/index.js`, and ncc's output is self-contained, this works fine — the output doesn't depend on `package.json` `"type"`.
 2. **`local.js` CLI tool**: Uses `#!/usr/bin/env node` shebang and is referenced as `"bin"` in `package.json`. With `"type": "module"`, `.js` files are treated as ESM, which is what we want.
 3. **Test suite**: mocha 11.x supports ESM natively. Tests use `require("@actions/github")` to mutate `context` between tests — this pattern needs reworking since ESM imports are live bindings, not mutable copies.
 
@@ -27,6 +27,7 @@ Convert the project from CommonJS (CJS) to ECMAScript Modules (ESM).
 ### Step 2: Convert `code-build.js` to ESM
 
 Replace:
+
 ```js
 const core = require("@actions/core");
 const github = require("@actions/github");
@@ -34,10 +35,19 @@ const { CloudWatchLogs } = require("@aws-sdk/client-cloudwatch-logs");
 const { CodeBuild } = require("@aws-sdk/client-codebuild");
 const assert = require("assert");
 
-module.exports = { runBuild, build, waitForBuildEndTime, inputs2Parameters, githubInputs, buildSdk, logName };
+module.exports = {
+  runBuild,
+  build,
+  waitForBuildEndTime,
+  inputs2Parameters,
+  githubInputs,
+  buildSdk,
+  logName,
+};
 ```
 
 With:
+
 ```js
 import core from "@actions/core";
 import github from "@actions/github";
@@ -45,7 +55,15 @@ import { CloudWatchLogs } from "@aws-sdk/client-cloudwatch-logs";
 import { CodeBuild } from "@aws-sdk/client-codebuild";
 import assert from "node:assert";
 
-export { runBuild, build, waitForBuildEndTime, inputs2Parameters, githubInputs, buildSdk, logName };
+export {
+  runBuild,
+  build,
+  waitForBuildEndTime,
+  inputs2Parameters,
+  githubInputs,
+  buildSdk,
+  logName,
+};
 ```
 
 Note: Check whether `@actions/core` and `@actions/github` v9 use default vs named exports and adjust accordingly.
@@ -53,6 +71,7 @@ Note: Check whether `@actions/core` and `@actions/github` v9 use default vs name
 ### Step 3: Convert `index.js` to ESM
 
 Replace:
+
 ```js
 const core = require("@actions/core");
 const { runBuild } = require("./code-build");
@@ -66,6 +85,7 @@ module.exports = run;
 ```
 
 With:
+
 ```js
 import core from "@actions/core";
 import { runBuild } from "./code-build.js";
@@ -84,6 +104,7 @@ Key change: `require.main === module` → `process.argv[1] === fileURLToPath(imp
 ### Step 4: Convert `local.js` to ESM
 
 Replace:
+
 ```js
 const uuid = require("uuid/v4");
 const cp = require("child_process");
@@ -93,6 +114,7 @@ const yargs = require("yargs");
 ```
 
 With:
+
 ```js
 import { v4 as uuid } from "uuid";
 import cp from "node:child_process";
@@ -109,20 +131,35 @@ Note: The `uuid` import path changes from `"uuid/v4"` to a named import `{ v4 }`
 ### Step 5: Convert `test/code-build-test.js` to ESM
 
 Replace:
+
 ```js
-const { logName, githubInputs, inputs2Parameters, waitForBuildEndTime, buildSdk } = require("../code-build");
+const {
+  logName,
+  githubInputs,
+  inputs2Parameters,
+  waitForBuildEndTime,
+  buildSdk,
+} = require("../code-build");
 const { expect } = require("chai");
 const forEach = require("mocha-each");
 ```
 
 With:
+
 ```js
-import { logName, githubInputs, inputs2Parameters, waitForBuildEndTime, buildSdk } from "../code-build.js";
+import {
+  logName,
+  githubInputs,
+  inputs2Parameters,
+  waitForBuildEndTime,
+  buildSdk,
+} from "../code-build.js";
 import { expect } from "chai";
 import forEach from "mocha-each";
 ```
 
 **Critical**: The tests mutate `require("@actions/github").context` between test cases:
+
 ```js
 const { context: OLD_CONTEXT } = require("@actions/github");
 // later...
@@ -185,20 +222,20 @@ This works because `github.context` is a mutable object — we're mutating prope
 
 ## Files Changed Summary
 
-| File | Change |
-|------|--------|
-| `package.json` | Add `"type": "module"`, upgrade deps (`@actions/github`, `uuid`, `yargs`, `@vercel/ncc`) |
-| `code-build.js` | `require` → `import`, `module.exports` → `export` |
-| `index.js` | `require` → `import`, `require.main` → `import.meta.url` check |
-| `local.js` | `require` → `import`, update `uuid` and `yargs` usage |
-| `test/code-build-test.js` | `require` → `import`, rework `@actions/github` context mutation |
-| `package-lock.json` | Regenerated |
+| File                      | Change                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| `package.json`            | Add `"type": "module"`, upgrade deps (`@actions/github`, `uuid`, `yargs`, `@vercel/ncc`) |
+| `code-build.js`           | `require` → `import`, `module.exports` → `export`                                        |
+| `index.js`                | `require` → `import`, `require.main` → `import.meta.url` check                           |
+| `local.js`                | `require` → `import`, update `uuid` and `yargs` usage                                    |
+| `test/code-build-test.js` | `require` → `import`, rework `@actions/github` context mutation                          |
+| `package-lock.json`       | Regenerated                                                                              |
 
 ## Dependencies Upgraded
 
-| Package | From | To | Reason |
-|---------|------|----|--------|
-| `@actions/github` | `^8.0.1` | `^9.1.0` | ESM-only from v9, which is now compatible |
-| `uuid` | `^3.4.0` | `^9.0.0` | ESM support, `uuid/v4` path removed |
-| `yargs` | `^15.3.1` | `^17.7.2` | ESM support |
-| `@vercel/ncc` | `^0.36.1` | `^0.38.4` | Better ESM input handling |
+| Package           | From      | To        | Reason                                    |
+| ----------------- | --------- | --------- | ----------------------------------------- |
+| `@actions/github` | `^8.0.1`  | `^9.1.0`  | ESM-only from v9, which is now compatible |
+| `uuid`            | `^3.4.0`  | `^9.0.0`  | ESM support, `uuid/v4` path removed       |
+| `yargs`           | `^15.3.1` | `^17.7.2` | ESM support                               |
+| `@vercel/ncc`     | `^0.36.1` | `^0.38.4` | Better ESM input handling                 |
