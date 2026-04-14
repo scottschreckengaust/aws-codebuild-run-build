@@ -354,7 +354,7 @@ If you find that these options don't meet your needs, please open an issue to le
 
 By creating a new Release a workflow is triggered creating a new commit which only contains `dist` and the `action.yml`. The necessary tags, i.e. for the release v1.0.7, the tag v1.0.7 is created and the v1.0 and v1 tags are updated.
 
-For the tagging and building the [build-and-tag](https://github.com/JasonEtco/build-and-tag-action) action by [Jason Etcovitch](https://github.com/JasonEtco) is used. It expects to have the main attribute and a build script to be set in the `package.json`. It then builds the code with the ncc compiler and creates the new tag/ updates existing tags for minor and major versions automatically.
+For the tagging and building the [build-and-tag](https://github.com/JasonEtco/build-and-tag-action) action by [Jason Etcovitch](https://github.com/JasonEtco) is used. It expects to have the main attribute and a build script to be set in the `package.json`. It then builds the code with esbuild and creates the new tag/ updates existing tags for minor and major versions automatically.
 
 ## License
 
