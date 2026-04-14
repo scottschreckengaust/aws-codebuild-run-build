@@ -16,12 +16,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^3.0.0",
-    "@actions/exec": "^1.0.3",
+    "@actions/exec": "^3.0.0",
     "@actions/github": "^9.1.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.441.0",
     "@aws-sdk/client-codebuild": "^3.444.0",
-    "uuid": "^9.0.0",
-    "yargs": "^17.7.2"
+    "uuid": "^13.0.0",
+    "yargs": "^18.0.0"
   },
   "bin": "./local.js",
   "files": [
@@ -34,16 +34,11 @@
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.5.0",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "mocha": "^11.7.5",
     "mocha-each": "^2.0.1",
-    "prettier": "^2.0.4"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "prettier": "^3.8.2"
   },
   "lint-staged": {
     "*.js": [

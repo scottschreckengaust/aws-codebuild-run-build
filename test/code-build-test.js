@@ -169,7 +169,7 @@ describe("githubInputs", () => {
     };
 
     expect(() => githubInputs(ctx)).to.throw(
-      "No source version could be evaluated."
+      "No source version could be evaluated.",
     );
   });
 
@@ -254,7 +254,7 @@ describe("inputs2Parameters", () => {
       .and.to.have.lengthOf.greaterThan(1);
 
     const [repoEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_REPOSITORY"
+      ({ name }) => name === "GITHUB_REPOSITORY",
     );
     expect(repoEnv)
       .to.haveOwnProperty("name")
@@ -263,7 +263,7 @@ describe("inputs2Parameters", () => {
     expect(repoEnv).to.haveOwnProperty("type").and.to.equal("PLAINTEXT");
 
     const [shaEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_SHA"
+      ({ name }) => name === "GITHUB_SHA",
     );
     expect(shaEnv).to.haveOwnProperty("name").and.to.equal("GITHUB_SHA");
     expect(shaEnv).to.haveOwnProperty("value").and.to.equal(sha);
@@ -310,7 +310,7 @@ describe("inputs2Parameters", () => {
     expect(test)
       .to.haveOwnProperty("imageOverride")
       .and.to.equal(
-        `111122223333.dkr.ecr.us-west-2.amazonaws.com/codebuild-docker-repo`
+        `111122223333.dkr.ecr.us-west-2.amazonaws.com/codebuild-docker-repo`,
       );
     expect(test)
       .to.haveOwnProperty("imagePullCredentialsTypeOverride")
@@ -322,7 +322,7 @@ describe("inputs2Parameters", () => {
       .and.to.have.lengthOf.greaterThan(1);
 
     const [repoEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_REPOSITORY"
+      ({ name }) => name === "GITHUB_REPOSITORY",
     );
     expect(repoEnv)
       .to.haveOwnProperty("name")
@@ -331,7 +331,7 @@ describe("inputs2Parameters", () => {
     expect(repoEnv).to.haveOwnProperty("type").and.to.equal("PLAINTEXT");
 
     const [shaEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_SHA"
+      ({ name }) => name === "GITHUB_SHA",
     );
     expect(shaEnv).to.haveOwnProperty("name").and.to.equal("GITHUB_SHA");
     expect(shaEnv).to.haveOwnProperty("value").and.to.equal(sha);
@@ -365,28 +365,28 @@ describe("inputs2Parameters", () => {
       .and.to.have.lengthOf.greaterThan(5);
 
     const [oneEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "one"
+      ({ name }) => name === "one",
     );
     expect(oneEnv).to.haveOwnProperty("name").and.to.equal("one");
     expect(oneEnv).to.haveOwnProperty("value").and.to.equal("_one_");
     expect(oneEnv).to.haveOwnProperty("type").and.to.equal("PLAINTEXT");
 
     const [twoEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "two"
+      ({ name }) => name === "two",
     );
     expect(twoEnv).to.haveOwnProperty("name").and.to.equal("two");
     expect(twoEnv).to.haveOwnProperty("value").and.to.equal("_two_");
     expect(twoEnv).to.haveOwnProperty("type").and.to.equal("PLAINTEXT");
 
     const [threeEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "three"
+      ({ name }) => name === "three",
     );
     expect(threeEnv).to.haveOwnProperty("name").and.to.equal("three");
     expect(threeEnv).to.haveOwnProperty("value").and.to.equal("_three_");
     expect(threeEnv).to.haveOwnProperty("type").and.to.equal("PLAINTEXT");
 
     const [fourEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "four"
+      ({ name }) => name === "four",
     );
     expect(fourEnv).to.haveOwnProperty("name").and.to.equal("four");
     expect(fourEnv).to.haveOwnProperty("value").and.to.equal("_four_");
@@ -435,12 +435,12 @@ describe("inputs2Parameters", () => {
     });
 
     const [repoEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_REPOSITORY"
+      ({ name }) => name === "GITHUB_REPOSITORY",
     );
     expect(repoEnv).to.equal(undefined);
 
     const [shaEnv] = test.environmentVariablesOverride.filter(
-      ({ name }) => name === "GITHUB_SHA"
+      ({ name }) => name === "GITHUB_SHA",
     );
     expect(shaEnv).to.equal(undefined);
   });
@@ -464,7 +464,7 @@ describe("waitForBuildEndTime", () => {
     const logReplies = [{ events: [] }];
     const sdk = help(
       () => buildReplies[count - count++],
-      () => logReplies[0]
+      () => logReplies[0],
     );
 
     const test = await waitForBuildEndTime(
@@ -473,7 +473,7 @@ describe("waitForBuildEndTime", () => {
         id: buildID,
         logs: { cloudWatchLogsArn },
       },
-      defaultConfig
+      defaultConfig,
     );
 
     expect(test).to.equal(buildReplies.pop().builds[0]);
@@ -515,7 +515,7 @@ describe("waitForBuildEndTime", () => {
     ];
     const sdk = help(
       () => buildReplies[count++],
-      () => logReplies[count - 1]
+      () => logReplies[count - 1],
     );
 
     const test = await waitForBuildEndTime(
@@ -524,7 +524,7 @@ describe("waitForBuildEndTime", () => {
         id: buildID,
         logs: { cloudWatchLogsArn: nullArn },
       },
-      defaultConfig
+      defaultConfig,
     );
 
     expect(test).to.equal(buildReplies.pop().builds[0]);
@@ -569,7 +569,7 @@ describe("waitForBuildEndTime", () => {
         }
 
         return { events: [{ message: "got one" }] };
-      }
+      },
     );
 
     const test = await waitForBuildEndTime(
@@ -578,7 +578,7 @@ describe("waitForBuildEndTime", () => {
         id: buildID,
         logs: { cloudWatchLogsArn: nullArn },
       },
-      { updateInterval: 1, updateBackOff: 1 }
+      { updateInterval: 1, updateBackOff: 1 },
     );
 
     expect(test.id).to.equal(buildID);
@@ -618,7 +618,7 @@ describe("waitForBuildEndTime", () => {
         }
 
         return { events: [{ message: "got one" }] };
-      }
+      },
     );
 
     //run the thing and it should fail
@@ -631,7 +631,7 @@ describe("waitForBuildEndTime", () => {
           id: buildID,
           logs: { cloudWatchLogsArn: nullArn },
         },
-        defaultConfig
+        defaultConfig,
       );
     } catch (err) {
       didFail = true;
