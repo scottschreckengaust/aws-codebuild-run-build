@@ -24,7 +24,8 @@
   },
   "bin": "./local.js",
   "files": [
-    "*.js"
+    "dist",
+    "action.yml"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",
