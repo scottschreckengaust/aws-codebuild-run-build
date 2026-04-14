@@ -5,9 +5,9 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "prettier -c *.js *.json *.md test/*.js; eslint **.js test/**.js",
-    "format": "prettier --write -c *.js *.json *.md test/*.js; eslint --fix **.js test/**.js",
-    "format:check": "prettier --check -c *.js *.json *.md test/*.js; eslint --fix **.js test/**.js",
+    "lint": "prettier -c *.js *.json *.md test/*.js; eslint *.js test/*.js",
+    "format": "prettier --write -c *.js *.json *.md test/*.js; eslint --fix *.js test/*.js",
+    "format:check": "prettier --check -c *.js *.json *.md test/*.js; eslint --fix *.js test/*.js",
     "package": "esbuild index.js --bundle --platform=node --format=esm --outfile=dist/index.js --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
     "build": "esbuild index.js --bundle --platform=node --format=esm --outfile=dist/index.js --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
     "test": "mocha"
@@ -28,10 +28,12 @@
     "*.js"
   ],
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "chai": "^6.2.2",
     "esbuild": "^0.28.0",
-    "eslint": "^8.43.0",
-    "eslint-config-prettier": "^6.10.1",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.5.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
     "mocha": "^11.7.5",
@@ -56,7 +58,6 @@
     "mocha": {
       "diff": "^8.0.3",
       "serialize-javascript": "^7.0.5"
-    },
-    "minimatch": "^9.0.5"
+    }
   }
 }
